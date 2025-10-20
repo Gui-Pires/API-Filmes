@@ -8,7 +8,7 @@ const Movie = sequelize.define("Movie", {
   },
   description: DataTypes.TEXT,
   director: DataTypes.STRING,
-  release_year: DataTypes.INTEGER,
+  release_year: DataTypes.DATEONLY,
   genre: DataTypes.STRING,
   rating: DataTypes.FLOAT,
   duration: DataTypes.INTEGER,
@@ -21,5 +21,5 @@ const Movie = sequelize.define("Movie", {
   timestamps: true,
 });
 
-sequelize.sync(); // cria tabela automaticamente
+sequelize.sync();
 module.exports = Movie;
