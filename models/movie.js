@@ -10,16 +10,22 @@ const Movie = sequelize.define("Movie", {
   director: DataTypes.STRING,
   release_year: DataTypes.DATEONLY,
   genre: DataTypes.STRING,
-  rating: DataTypes.FLOAT,
   duration: DataTypes.INTEGER,
   cast: DataTypes.TEXT,
   language: DataTypes.STRING,
   country: DataTypes.STRING,
   trailer_url: DataTypes.STRING,
-  poster_url: DataTypes.STRING
+  poster_url: DataTypes.STRING,
+  rating: {
+    type: DataTypes.FLOAT,
+    defaultValue: 0
+  },
+  rating_count: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0
+  }
 }, {
   timestamps: true,
 });
 
-sequelize.sync();
 module.exports = Movie;
