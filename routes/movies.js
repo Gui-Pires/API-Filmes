@@ -16,16 +16,29 @@ router.post("/", async (req, res) => {
 
 router.get("/", async (req, res) => {
     try {
-        const { title, genre, year } = req.query;
+        const { title, director, year, s_year, e_year, genre, cast, language, country, min_rating, max_rating } = req.query;
 
         const where = {};
 
-        if (title) where.title = { [Op.like]: `%${title}%` };
-        if (genre) where.genre = genre;
-        if (year) where.year = year;
+        const addLike = (field, value) => {
+            if (value) where[field] = { [Op.like]: `%${value}%` };
+        }
+
+        addLike("title", title);
+        addLike("director", director);
+        addLike("genre", genre);
+        addLike("cast", cast);
+        addLike("language", language);
+        addLike("country", country);
+
+        // Valores diferentes tratados a parte
+        if (year) where.release_year = { [Op.between]: [`${year}-01-01`, `${year}-12-31`] }
+        else if (s_year && e_year) where.release_year = { [Op.between]: [`${s_year}-01-01`, `${e_year}-12-31`] };
+
+        if (min_rating) where.rating = { ...where.rating, [Op.gte]: Number(min_rating) };
+        if (max_rating) where.rating = { ...where.rating, [Op.lte]: Number(max_rating) };
 
         const movies = await Movie.findAll({ where });
-
         return res.json(movies);
     } catch (error) {
         console.error(error);
