@@ -16,7 +16,7 @@ router.post("/", async (req, res) => {
 
 router.get("/", async (req, res) => {
     try {
-        const { title, director, year, s_year, e_year, genre, cast, language, country, min_rating, max_rating } = req.query;
+        const { title, director, year, s_year, e_year, genre, cast, language, country, min_rating, max_rating, limit } = req.query;
 
         const where = {};
 
@@ -38,7 +38,13 @@ router.get("/", async (req, res) => {
         if (min_rating) where.rating = { ...where.rating, [Op.gte]: Number(min_rating) };
         if (max_rating) where.rating = { ...where.rating, [Op.lte]: Number(max_rating) };
 
-        const movies = await Movie.findAll({ where });
+        const queryOptions = { where }
+
+        if (limit) {
+            queryOptions.limit = Number(limit); // evita erro caso venha string
+        }
+
+        const movies = await Movie.findAll(queryOptions);
         return res.json(movies);
     } catch (error) {
         console.error(error);
