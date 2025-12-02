@@ -21,8 +21,8 @@ router.get("/", async (req, res) => {
 
         const where = {};
 
-        if (nickname) where.nickname = { [Op.like]: `%${nickname}%` };
-        if (email) where.email = { [require("sequelize").Op.like]: `%${email}%` };
+        if (nickname) where.nickname = { [Op.like]: `%${nickname}%` }
+        else if (email) where.email = { [Op.like]: `%${email}%` }
 
         const users = await User.findAll({ where });
         return res.json(users);
@@ -51,6 +51,15 @@ router.get("/:id", async (req, res) => {
 router.post("/register", async (req, res) => {
     try {
         const { email, password, nickname } = req.body;
+
+        if (!email)
+            return res.status(400).json({ error: "E-mail inválido" });
+
+        if (!password)
+            return res.status(400).json({ error: "Senha inválida" });
+
+        if (!nickname)
+            return res.status(400).json({ error: "Nickname inválido" });
 
         // Verifica se email já existe
         const emailExists = await User.findOne({ where: { email } });
@@ -86,6 +95,12 @@ router.post("/login", async (req, res) => {
     try {
         const { email, password } = req.body;
 
+        if (!email)
+            return res.status(400).json({ error: "E-mail inválido" });
+
+        if (!password)
+            return res.status(400).json({ error: "Senha inválida" });
+
         const user = await User.findOne({ where: { email } });
 
         if (!user)
@@ -96,7 +111,7 @@ router.post("/login", async (req, res) => {
         if (!valid)
             return res.status(401).json({ error: "Senha inválida" });
 
-        return res.json({ message: "Login realizado com sucesso", user });
+        return res.json({ message: "Login realizado com sucesso", user: { id: user.id, nickname: user.nickname } });
     } catch (error) {
         return res.status(500).json({ error: error.message });
     }
