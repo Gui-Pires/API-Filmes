@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Movie = require("../models/movie");
 const Review = require("../models/review");
+const User = require("../models/user");
 const sequelize = require("../database");
 
 const { Op } = require("sequelize");
@@ -34,12 +35,36 @@ router.get("/:id", async (req, res) => {
     const review = await Review.findByPk(req.params.id);
 
     if (!review)
-      return res.status(404).json({ error: "Avaliação não encontrado" });
+      return res.status(404).json({ error: "Avaliação não encontrada" });
 
     return res.json(review);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Erro ao buscar avaliação" });
+  }
+});
+
+router.get("/movie/:id", async (req, res) => {
+  try {
+    const movieId = req.params.id;
+
+    const reviews = await Review.findAll({
+      where: { movie_id: movieId },
+      include: { model: User, attributes: ["id", "nickname"] }
+    });
+
+    // Caso não exista nenhuma review
+    if (reviews.length === 0) {
+      return res.status(404).json({ 
+        error: "Nenhuma avaliação encontrada para este filme" 
+      });
+    }
+
+    return res.json(reviews);
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Erro ao buscar avaliações" });
   }
 });
 

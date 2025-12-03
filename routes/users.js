@@ -40,7 +40,57 @@ router.get("/:id", async (req, res) => {
         if (!user)
             return res.status(404).json({ error: "Usuário não encontrado" });
 
-        return res.json(user);
+        return res.json({ id: user.id, email: user.email, nickname: user.nickname });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: "Erro ao buscar usuário" });
+    }
+});
+
+router.put("/:id", async (req, res) => {
+    try {
+        const user = await User.findByPk(req.params.id);
+        const { nickname, email, oldpassword, newpassword } = req.body
+
+        if (!user)
+            return res.status(404).json({ error: "Usuário não encontrado" });
+
+        if (!email)
+            return res.status(400).json({ error: "E-mail inválido" });
+
+        if (!oldpassword)
+            return res.status(400).json({ error: "Senha antiga inválida" });
+
+        if (!newpassword)
+            return res.status(400).json({ error: "Senha nova inválida" });
+
+        if (!nickname)
+            return res.status(400).json({ error: "Nickname inválido" });
+
+        // Verifica se nickname já existe
+        const nickExists = await User.findOne({ where: { nickname } });
+        if (nickExists)
+            return res.status(400).json({ error: "Nickname já está em uso" });
+        
+        // Verifica se a senha antiga é válida
+        const valid = await bcrypt.compare(oldpassword, user.password);
+        if (!valid)
+            return res.status(401).json({ error: "Senha antiga está errada" });
+
+        // Criptografando senha nova
+        const hashedPassword = await bcrypt.hash(newpassword, 10);
+
+        const updateUser = {
+            email,
+            password: hashedPassword,
+            nickname
+        }
+
+        await user.update(updateUser);
+        return res.json({
+            message: "Usuário atualizado com sucesso!",
+            user: { id: user.id, nickname: user.nickname, email: user.email }
+        });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: "Erro ao buscar usuário" });
@@ -82,7 +132,7 @@ router.post("/register", async (req, res) => {
 
         return res.json({
             message: "Usuário registrado com sucesso!",
-            user
+            user: { id: user.id, nickname: user.nickname, email: user.email }
         });
 
     } catch (error) {
@@ -111,7 +161,7 @@ router.post("/login", async (req, res) => {
         if (!valid)
             return res.status(401).json({ error: "Senha inválida" });
 
-        return res.json({ message: "Login realizado com sucesso", user: { id: user.id, nickname: user.nickname } });
+        return res.json({ message: "Login realizado com sucesso", user: { id: user.id, nickname: user.nickname, email: user.email } });
     } catch (error) {
         return res.status(500).json({ error: error.message });
     }
