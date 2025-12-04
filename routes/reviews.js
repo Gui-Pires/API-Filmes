@@ -88,9 +88,7 @@ router.post("/:movieId", async (req, res) => {
       return res.status(404).json({ error: "Filme não encontrado" });
     }
 
-    const novaMedia =
-      (movie.rating * movie.rating_count + rating) /
-      (movie.rating_count + 1);
+    const novaMedia = (movie.rating * movie.rating_count + rating) / (movie.rating_count + 1);
 
     await movie.update(
       {
