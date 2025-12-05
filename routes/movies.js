@@ -50,7 +50,32 @@ router.get("/", async (req, res) => {
         console.error(error);
         return res.status(500).json({ error: "Erro ao buscar filmes" });
     }
-});
+})
+
+router.get("/search", async (req, res) => {
+    try {
+        const { q } = req.query;
+
+        const search = `%${q}%`;
+        const movies = await Movie.findAll({
+            where: {
+                [Op.or]: [
+                    { title: { [Op.like]: search } },
+                    { director: { [Op.like]: search } },
+                    { genre: { [Op.like]: search } },
+                    { cast: { [Op.like]: search } },
+                    { country: { [Op.like]: search } },
+                ]
+            },
+            limit: 10
+        })
+
+        return res.json(movies);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: "Erro ao buscar filmes" });
+    }
+})
 
 // Buscar filme por ID
 router.get("/:id", async (req, res) => {
@@ -65,7 +90,7 @@ router.get("/:id", async (req, res) => {
         console.error(error);
         return res.status(500).json({ error: "Erro ao buscar filme" });
     }
-});
+})
 
 // Atualizar filme
 router.put("/:id", async (req, res) => {
